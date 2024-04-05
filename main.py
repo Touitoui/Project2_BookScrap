@@ -1,3 +1,5 @@
+import os
+
 import requests
 import csv
 from bs4 import BeautifulSoup
@@ -15,11 +17,18 @@ fields = ["product_page_url",
           "category",
           "review_rating",
           "image_url"]
+data_folder = "scrapped"
 
 
 def get_soup(url_to_soup):
     page = requests.get(url_to_soup)
     return BeautifulSoup(page.content, 'html.parser')
+
+
+def create_data_folder(path):
+    is_exist = os.path.exists(path)
+    if not is_exist:
+        os.makedirs(path)
 
 
 def availability_to_number(availability):
@@ -68,8 +77,6 @@ def crawl_category_page(category_url, writer):
         for book in book_list:
             book_url = urljoin(category_url, book.a.get('href'))
             writer.writerow(scrap_book_page(book_url))
-            print("Writing in cvs...")
-
         next_page = soup.find("li", class_="next")
         if not next_page:
             break
@@ -81,33 +88,12 @@ def crawl_all_categories(url):
     category_list = soup.find(class_="nav nav-list").find("ul").find_all("li")
     for category in category_list:
         category_name = category.a.string.strip()
-        with open('scrapped/' + category_name + '.csv', 'w', newline='') as file_csv:
+        with open(data_folder + '/' + category_name + '.csv', 'w', newline='') as file_csv:
             writer = csv.writer(file_csv, delimiter=',')
             writer.writerow(fields)
             category_url = urljoin(url, category.a.get('href'))
             crawl_category_page(category_url, writer)
 
 
-# def scrap_page():
-#     for scraped_book in scraped_books:
-#         title = scraped_book.h3.a["title"]
-#         price = scraped_book.css.select(".price_color")[0].string
-#         img = urljoin(url, scraped_book.img["src"])
-#         writer.writerow([title, price, img])
-#         print("Title: ", title, "\nPrice: ", price, "\nImage: ", img, "\n", "\n")
-
-
+create_data_folder(data_folder)
 crawl_all_categories("https://books.toscrape.com/catalogue/category/books/nonfiction_13/index.html")
-
-# with open('scrapped/data.csv', 'w', newline='') as file_csv:
-#     writer = csv.writer(file_csv, delimiter=',')
-#     writer.writerow(fields)
-#     while True:
-#         soup = get_soup(url)
-#         scraped_books = soup.find_all("li", class_="col-xs-6 col-sm-4 col-md-3 col-lg-3")
-#         scrap_page()
-#         next_page = soup.find_all("li", class_="next")
-#         if not next_page:
-#             break
-#         url = urljoin(url, next_page[0].a.get('href'))
-#         print("PAGE PAGE PAGE\n\n\nPAGEPAGEPAGE")
