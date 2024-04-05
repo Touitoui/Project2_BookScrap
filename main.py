@@ -101,4 +101,4 @@ def crawl_all_categories(url):
 
 
 create_data_folder(data_folder)
-crawl_all_categories("https://books.toscrape.com/catalogue/category/books/nonfiction_13/index.html")
+crawl_all_categories("https://books.toscrape.com/catalogue/category/books_1/index.html")
