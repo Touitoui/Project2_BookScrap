@@ -9,18 +9,16 @@ def availability_to_number(availability):
     return ''.join(x for x in availability if x.isdigit())
 
 
+def rating_to_number(full_class):
+    return w2n.word_to_num(full_class[1])
+
+
 def get_product_information(table):
-    # print(table.table)
     data = {}
     for table_row in table.find_all("tr"):
         data[table_row.th.string] = table_row.td.string
-        # print("[", data, "]")
-    # TODO data["Availability"] to int
-    return data["UPC"], data["Price (incl. tax)"], data["Price (excl. tax)"], availability_to_number(data["Availability"])
-
-
-def rating_to_number(full_class):
-    return w2n.word_to_num(full_class[1])
+    return data["UPC"], data["Price (incl. tax)"], data["Price (excl. tax)"], availability_to_number(
+        data["Availability"])
 
 
 def scrap_book_page(book_url):
@@ -36,23 +34,32 @@ def scrap_book_page(book_url):
     review_rating = rating_to_number(book_soup.find(class_="star-rating").get("class"))
     image_url = urljoin(url, book_soup.img["src"])
 
-    # writer.writerow(
-    print([product_page_url,
-           universal_product_code,
-           title,
-           price_including_tax,
-           price_excluding_tax,
-           number_available,
-           product_description,
-           category,
-           review_rating,
-           image_url])
+    return [product_page_url,
+            universal_product_code,
+            title,
+            price_including_tax,
+            price_excluding_tax,
+            number_available,
+            product_description,
+            category,
+            review_rating,
+            image_url]
 
 
-def test_book():
-    test_url = "https://books.toscrape.com/catalogue/frankenstein_20/index.html"
+def crawl_category(category_url):
+    while True:
+        page = requests.get(category_url)
+        soup = BeautifulSoup(page.content, 'html.parser')
 
-    scrap_book_page(test_url)
+        book_list = soup.find("section").find(class_="row").find_all("li")
+        for book in book_list:
+            book_url = urljoin(url, book.a.get('href'))
+            print(scrap_book_page(book_url)) # TODO Save to CVS
+
+        next_page = soup.find("li", class_="next")
+        if not next_page:
+            break
+        category_url = urljoin(category_url, next_page.a.get('href'))
 
 
 # def scrap_page():
@@ -64,7 +71,6 @@ def test_book():
 #         print("Title: ", title, "\nPrice: ", price, "\nImage: ", img, "\n", "\n")
 
 
-en_tete = ["title", "price", "img"]
 fields = ["product_page_url",
           "universal_product_code (upc)",
           "title",
@@ -75,13 +81,14 @@ fields = ["product_page_url",
           "category",
           "review_rating",
           "image_url"]
-url = "https://books.toscrape.com/catalogue/page-49.html"
+url = "https://books.toscrape.com/catalogue/category/books/nonfiction_13/index.html"
 
 books = {}
-test_book()
+crawl_category(url)
+
 # with open('scrapped/data.csv', 'w', newline='') as file_csv:
 #     writer = csv.writer(file_csv, delimiter=',')
-#     writer.writerow(en_tete)
+#     writer.writerow(fields)
 #     while True:
 #         webpage = requests.get(url)
 #         soup = BeautifulSoup(webpage.content, 'html.parser')
