@@ -47,22 +47,31 @@ def get_product_information(table):
         data["Availability"])
 
 
+def save_cover(image_url, category, book_url):
+    folder = data_folder + '/' + category
+    filename = book_url.replace('https://books.toscrape.com/catalogue/', '').replace('/index.html', '')
+    filename = filename + '.jpg'
+    img_data = requests.get(image_url).content
+    create_data_folder(folder)
+    with open(folder + '/' + filename, 'wb') as handler:
+        handler.write(img_data)
+
+
 def scrap_book_page(book_url):
-    print(book_url)
     book_soup = get_soup(book_url)
     product_page_url = book_url
     universal_product_code, price_including_tax, price_excluding_tax, number_available = get_product_information(
         book_soup.find(class_="table table-striped"))
-    title = book_soup.find(class_="product_main").h1.string
+    title = book_soup.find(class_="product_main").h1.string.strip()
     description_field = book_soup.find(id="product_description")
     if description_field:
-        product_description = description_field.find_next("p").string
+        product_description = description_field.find_next("p").string.strip()
     else:
         product_description = ""
-    category = book_soup.find("ul", class_="breadcrumb").find_all("li")[2].a.string
+    category = book_soup.find("ul", class_="breadcrumb").find_all("li")[2].a.string.strip()
     review_rating = rating_to_number(book_soup.find(class_="star-rating").get("class"))
     image_url = urljoin(book_url, book_soup.img["src"])
-
+    save_cover(image_url, category, book_url)
     return [product_page_url,
             universal_product_code,
             title,
