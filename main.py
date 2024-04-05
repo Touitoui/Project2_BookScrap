@@ -1,5 +1,4 @@
 import os
-
 import requests
 import csv
 from bs4 import BeautifulSoup
@@ -109,5 +108,6 @@ def crawl_all_categories(url):
             crawl_category_page(category_url, writer)
 
 
-create_data_folder(data_folder)
-crawl_all_categories("https://books.toscrape.com/catalogue/category/books_1/index.html")
+if __name__ == '__main__':
+    create_data_folder(data_folder)
+    crawl_all_categories("https://books.toscrape.com/catalogue/category/books_1/index.html")
