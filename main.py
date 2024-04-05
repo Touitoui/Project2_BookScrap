@@ -15,7 +15,6 @@ fields = ["product_page_url",
           "category",
           "review_rating",
           "image_url"]
-#url = "https://books.toscrape.com/catalogue/category/books/nonfiction_13/index.html"
 
 
 def get_soup(url_to_soup):
@@ -41,7 +40,6 @@ def get_product_information(table):
 
 def scrap_book_page(book_url):
     book_soup = get_soup(book_url)
-
     product_page_url = book_url
     universal_product_code, price_including_tax, price_excluding_tax, number_available = get_product_information(
         book_soup.find(class_="table table-striped"))
@@ -63,14 +61,14 @@ def scrap_book_page(book_url):
             image_url]
 
 
-def crawl_category_page(category_url):
+def crawl_category_page(category_url, writer):
     while True:
         soup = get_soup(category_url)
-
         book_list = soup.find("section").find(class_="row").find_all("li")
         for book in book_list:
             book_url = urljoin(category_url, book.a.get('href'))
-            print(scrap_book_page(book_url))  # TODO Save to CVS
+            writer.writerow(scrap_book_page(book_url))
+            print("Writing in cvs...")
 
         next_page = soup.find("li", class_="next")
         if not next_page:
@@ -79,13 +77,15 @@ def crawl_category_page(category_url):
 
 
 def crawl_all_categories(url):
-    print(url)
     soup = get_soup(url)
-    index = soup.find(class_="nav nav-list").find("ul").find_all("li")
-    for x in index:
-        category_url = urljoin(url, x.a.get('href'))
-        print(category_url)
-        crawl_category_page(url)
+    category_list = soup.find(class_="nav nav-list").find("ul").find_all("li")
+    for category in category_list:
+        category_name = category.a.string.strip()
+        with open('scrapped/' + category_name + '.csv', 'w', newline='') as file_csv:
+            writer = csv.writer(file_csv, delimiter=',')
+            writer.writerow(fields)
+            category_url = urljoin(url, category.a.get('href'))
+            crawl_category_page(category_url, writer)
 
 
 # def scrap_page():
@@ -97,9 +97,6 @@ def crawl_all_categories(url):
 #         print("Title: ", title, "\nPrice: ", price, "\nImage: ", img, "\n", "\n")
 
 
-
-
-books = {}
 crawl_all_categories("https://books.toscrape.com/catalogue/category/books/nonfiction_13/index.html")
 
 # with open('scrapped/data.csv', 'w', newline='') as file_csv:
