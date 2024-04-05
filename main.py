@@ -48,12 +48,17 @@ def get_product_information(table):
 
 
 def scrap_book_page(book_url):
+    print(book_url)
     book_soup = get_soup(book_url)
     product_page_url = book_url
     universal_product_code, price_including_tax, price_excluding_tax, number_available = get_product_information(
         book_soup.find(class_="table table-striped"))
     title = book_soup.find(class_="product_main").h1.string
-    product_description = book_soup.find(id="product_description").find_next("p").string
+    description_field = book_soup.find(id="product_description")
+    if description_field:
+        product_description = description_field.find_next("p").string
+    else:
+        product_description = ""
     category = book_soup.find("ul", class_="breadcrumb").find_all("li")[2].a.string
     review_rating = rating_to_number(book_soup.find(class_="star-rating").get("class"))
     image_url = urljoin(book_url, book_soup.img["src"])
@@ -88,7 +93,7 @@ def crawl_all_categories(url):
     category_list = soup.find(class_="nav nav-list").find("ul").find_all("li")
     for category in category_list:
         category_name = category.a.string.strip()
-        with open(data_folder + '/' + category_name + '.csv', 'w', newline='') as file_csv:
+        with open(data_folder + '/' + category_name + '.csv', 'w', encoding='UTF-8', newline='') as file_csv:
             writer = csv.writer(file_csv, delimiter=',')
             writer.writerow(fields)
             category_url = urljoin(url, category.a.get('href'))
