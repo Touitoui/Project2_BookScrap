@@ -83,10 +83,10 @@ def scrap_book_page(book_url):
 def crawl_category_page(category_url, writer):
     """
     Takes the url of a category and call scrap_book_page() on every book found.
-    Save the returned values of scrap_book_page() into the category's CVS file.
+    Save the returned values of scrap_book_page() into the category's CSV file.
     Will crawl through the category pages until no more "Next button" is present.
     :param category_url: Url of the category.
-    :param writer: Writer of the category's CVS.
+    :param writer: Writer of the category's CSV.
     """
     while True:
         soup = get_soup(category_url)
@@ -102,7 +102,7 @@ def crawl_category_page(category_url, writer):
 
 def crawl_all_categories(url):
     """
-    Look for the categories url present in the page, create a CVS file and call the function crawl_category_page()
+    Look for the categories url present in the page, create a CSV file and call the function crawl_category_page()
     on every category found.
     :param url: Url of the website,
     Accept "https://books.toscrape.com/" or "https://books.toscrape.com/catalogue/category/books_1/index.html"
