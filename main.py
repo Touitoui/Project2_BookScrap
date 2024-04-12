@@ -1,4 +1,5 @@
 import csv
+import sys
 from urllib.parse import urljoin
 from functions import *
 
@@ -13,7 +14,7 @@ fields = ["product_page_url",
           "category",
           "review_rating",
           "image_url"]
-data_folder = "scrapped"
+data_folder_ = "scrapped"
 
 
 def get_product_information(table):
@@ -106,7 +107,9 @@ def crawl_all_categories(url):
     :param url: Url of the website,
     Accept "https://books.toscrape.com/" or "https://books.toscrape.com/catalogue/category/books_1/index.html"
     or similar structured website.
+    :param data_folder: folder name or path used for saving.
     """
+    create_data_folder(data_folder)
     soup = get_soup(url)
     category_list = soup.find(class_="nav nav-list").find("ul").find_all("li")
     for category in category_list:
@@ -119,5 +122,6 @@ def crawl_all_categories(url):
 
 
 if __name__ == '__main__':
-    create_data_folder(data_folder)
-    crawl_all_categories("https://books.toscrape.com/catalogue/category/books_1/index.html")
+    if len(sys.argv) > 1:
+        data_folder = sys.argv[1]
+    crawl_all_categories("https://books.toscrape.com/")
