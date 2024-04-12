@@ -14,7 +14,7 @@ fields = ["product_page_url",
           "category",
           "review_rating",
           "image_url"]
-data_folder_ = "scrapped"
+data_folder = "scrapped"
 
 
 def get_product_information(table):
@@ -124,5 +124,6 @@ def crawl_all_categories(url):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
+        print(sys.argv)
         data_folder = sys.argv[1]
     crawl_all_categories("https://books.toscrape.com/")
