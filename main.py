@@ -114,7 +114,8 @@ def crawl_all_categories(url):
     category_list = soup.find(class_="nav nav-list").find("ul").find_all("li")
     for category in category_list:
         category_name = category.a.string.strip()
-        with open(data_folder + '/' + category_name + '.csv', 'w', encoding='UTF-8', newline='') as file_csv:
+        create_data_folder(data_folder + '/' + category_name)
+        with open(data_folder + '/' + category_name + '/_data.csv', 'w', encoding='UTF-8', newline='') as file_csv:
             writer = csv.writer(file_csv, delimiter=',')
             writer.writerow(fields)
             category_url = urljoin(url, category.a.get('href'))
