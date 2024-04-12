@@ -1,9 +1,6 @@
-import os
-import requests
 import csv
-from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from word2number import w2n
+from functions import *
 
 # Global variables
 fields = ["product_page_url",
@@ -19,26 +16,13 @@ fields = ["product_page_url",
 data_folder = "scrapped"
 
 
-def get_soup(url_to_soup):
-    page = requests.get(url_to_soup)
-    return BeautifulSoup(page.content, 'html.parser')
-
-
-def create_data_folder(path):
-    is_exist = os.path.exists(path)
-    if not is_exist:
-        os.makedirs(path)
-
-
-def availability_to_number(availability):
-    return ''.join(x for x in availability if x.isdigit())
-
-
-def rating_to_number(full_class):
-    return w2n.word_to_num(full_class[1])
-
-
 def get_product_information(table):
+    """
+    Parse the content of HTML table containing the book's information and store them into a Dict. Return only the
+    value needed for the project.
+    :param table: BeautifulSoup with the content of an HTML table, consisting of the book's information.
+    :return: "UPC" value, "Price (incl. tax)" value, "Price (excl. tax)" value, "Availability" value.
+    """
     data = {}
     for table_row in table.find_all("tr"):
         data[table_row.th.string] = table_row.td.string
@@ -47,6 +31,12 @@ def get_product_information(table):
 
 
 def save_cover(image_url, category, book_url):
+    """
+    Takes the images information and save the image.
+    :param image_url: Url of the image.
+    :param category: Category of the book used for the saving folder.
+    :param book_url: Url of the book used for naming the image file.
+    """
     folder = data_folder + '/' + category
     filename = book_url.replace('https://books.toscrape.com/catalogue/', '').replace('/index.html', '')
     filename = filename + '.jpg'
@@ -57,6 +47,12 @@ def save_cover(image_url, category, book_url):
 
 
 def scrap_book_page(book_url):
+    """
+    Takes the url of a book and return its information parsed.
+    Call the function to save the cover.
+    :param book_url: Url of the book's page
+    :return: Array containing the parsed and sorted information of the book.
+    """
     book_soup = get_soup(book_url)
     product_page_url = book_url
     universal_product_code, price_including_tax, price_excluding_tax, number_available = get_product_information(
@@ -84,6 +80,13 @@ def scrap_book_page(book_url):
 
 
 def crawl_category_page(category_url, writer):
+    """
+    Takes the url of a category and call scrap_book_page() on every book found.
+    Save the returned values of scrap_book_page() into the category's CVS file.
+    Will crawl through the category pages until no more "Next button" is present.
+    :param category_url: Url of the category.
+    :param writer: Writer of the category's CVS.
+    """
     while True:
         soup = get_soup(category_url)
         book_list = soup.find("section").find(class_="row").find_all("li")
@@ -97,6 +100,13 @@ def crawl_category_page(category_url, writer):
 
 
 def crawl_all_categories(url):
+    """
+    Look for the categories url present in the page, create a CVS file and call the function crawl_category_page()
+    on every category found.
+    :param url: Url of the website,
+    Accept "https://books.toscrape.com/" or "https://books.toscrape.com/catalogue/category/books_1/index.html"
+    or similar structured website.
+    """
     soup = get_soup(url)
     category_list = soup.find(class_="nav nav-list").find("ul").find_all("li")
     for category in category_list:
